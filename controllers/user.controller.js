@@ -2,28 +2,37 @@ import User from "../models/user.model.js";
 
 export const getUserProfileAndRepos = async (req, res) => {
 	const { username } = req.params;
-	try {
-		
-		const userRes = await fetch(`https://api.github.com/users/${username}`, {
-			headers: {
-				authorization: `token ${process.env.GITHUB_API_KEY}`,
-			},
-		});
 
+	try {
+		const headers = {};
+		if (process.env.GITHUB_API_KEY) {
+			headers.authorization = `token ${process.env.GITHUB_API_KEY}`;
+		}
+
+		const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
+
+		if (!userRes.ok) {
+			const err = await userRes.json();
+			throw new Error(err.message || 'Failed to fetch user profile');
+		}
 		const userProfile = await userRes.json();
 
-		const repoRes = await fetch(userProfile.repos_url, {
-			headers: {
-				authorization: `token ${process.env.GITHUB_API_KEY}`,
-			},
-		});
+		const repoRes = await fetch(userProfile.repos_url, { headers });
+
+		if (!repoRes.ok) {
+			const err = await repoRes.json();
+			throw new Error(err.message || 'Failed to fetch user repos');
+		}
 		const repos = await repoRes.json();
 
 		res.status(200).json({ userProfile, repos });
+
 	} catch (error) {
+		console.error("GitHub Fetch Error:", error.message);
 		res.status(500).json({ error: error.message });
 	}
 };
+
 
 export const likeProfile = async (req, res) => {
 	try {
