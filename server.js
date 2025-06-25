@@ -19,9 +19,14 @@ const PORT = process.env.PORT || 5000;
 
 // Optional: Allow frontend to access backend (adjust the URL if needed)
 app.use(cors({
-  origin: "https://git-frontend-two.onrender.com", //  replace with actual frontend URL
-  credentials: true
+	origin: [
+		"https://git-frontend.onrender.com",
+		"https://git-frontend-two.onrender.com",
+		"http://localhost:3000"
+	],
+	credentials: true
 }));
+
 
 app.use(session({ secret: "keyboard cat", resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
